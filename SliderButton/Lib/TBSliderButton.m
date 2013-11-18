@@ -11,13 +11,11 @@
 
 
 /** Parameters **/
-#define TB_SAFEAREA_PADDING 60
+//#define TB_SAFEAREA_PADDING 60
 
-#define LEFT_HANDLE_PADDING 22
-#define RIGHT_MARGIN 8  // space on the right to start clipping
-#define HANDLE_MARGIN_TOP 1
-#define HANDLE_MARGIN_LEFT 3
-#define HANDLE_WIDTH 80
+
+#define MARGIN 8  // space on the right to start clipping
+
 
 #pragma mark - Private -
 
@@ -217,11 +215,11 @@
         CGRect textFrame = [self.labelField frame];
         
         if (self.isOn) {
-            textFrame.origin.x = 0 + RIGHT_MARGIN;
-            textFrame.size.width = self.labelWidth + deltaX + self.labelStartXPos - RIGHT_MARGIN;
+            textFrame.origin.x = 0 + MARGIN;
+            textFrame.size.width = self.labelWidth + deltaX + self.labelStartXPos - MARGIN;
         } else {
             textFrame.origin.x = self.labelStartXPos + deltaX;
-            textFrame.size.width = self.labelWidth - deltaX + self.labelStartXPos - RIGHT_MARGIN;
+            textFrame.size.width = self.labelWidth - deltaX + self.labelStartXPos - MARGIN;
         }
         NSLog(@"textFrame x = %f", textFrame.origin.x);
         if (textFrame.size.width < 0 )
