@@ -90,7 +90,6 @@
     [self.handleImageView setFrame:handleFrame];
     //Using a TextField area we can easily modify the control to get user input from this field
     self.labelStartXPos = (imageSize.width  - fontSize.width) /2;
-    NSLog(@"labelStartXPos = %f",self.labelStartXPos);
     CGRect textFieldRect = CGRectMake(self.labelStartXPos,
                                       (imageSize.height - fontSize.height) /2,
                                       fontSize.width,
@@ -172,7 +171,7 @@
 
 #pragma mark - Drawing Functions - 
 
-//Use the draw rect to draw the Background, the Circle and the Handle 
+// Use to override drawing
 -(void)drawRect:(CGRect)rect{
     
     [super drawRect:rect];
@@ -221,7 +220,7 @@
             textFrame.origin.x = self.labelStartXPos + deltaX;
             textFrame.size.width = self.labelWidth - deltaX + self.labelStartXPos - MARGIN;
         }
-        NSLog(@"textFrame x = %f", textFrame.origin.x);
+ //       NSLog(@"textFrame x = %f", textFrame.origin.x);
         if (textFrame.size.width < 0 )
             textFrame.size.width = 0;
         [self.labelField setFrame:textFrame];
