@@ -156,7 +156,7 @@
 -(void)returnToStartState
 {
     CGRect handleFrame = [self.handleImageView frame];
-    handleFrame.origin.x = 0;
+    handleFrame.origin.x = self.handleStartPos;
     
     CGRect labelFrame = [self.labelField frame];
     labelFrame.origin.x = self.labelStartXPos;
