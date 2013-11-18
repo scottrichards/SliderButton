@@ -22,6 +22,8 @@
 		01ECEF3C1839393300AD2D8B /* handleImageOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 01ECEF381839393300AD2D8B /* handleImageOff.png */; };
 		01ECEF3D1839393300AD2D8B /* handleImageOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 01ECEF391839393300AD2D8B /* handleImageOn.png */; };
 		01ECEF411839394400AD2D8B /* TBSliderButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 01ECEF401839394400AD2D8B /* TBSliderButton.m */; };
+		01ECEF4518398E5000AD2D8B /* handleArrowOff.png in Resources */ = {isa = PBXBuildFile; fileRef = 01ECEF4318398E5000AD2D8B /* handleArrowOff.png */; };
+		01ECEF4618398E5000AD2D8B /* handleArrowOn.png in Resources */ = {isa = PBXBuildFile; fileRef = 01ECEF4418398E5000AD2D8B /* handleArrowOn.png */; };
 		A5EB2F8116A1E217006E4B6A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5EB2F8016A1E217006E4B6A /* UIKit.framework */; };
 		A5EB2F8316A1E217006E4B6A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5EB2F8216A1E217006E4B6A /* Foundation.framework */; };
 		A5EB2F8516A1E217006E4B6A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A5EB2F8416A1E217006E4B6A /* CoreGraphics.framework */; };
@@ -48,6 +50,8 @@
 		01ECEF3E1839394400AD2D8B /* Commons.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Commons.h; path = SliderButton/Lib/Commons.h; sourceTree = SOURCE_ROOT; };
 		01ECEF3F1839394400AD2D8B /* TBSliderButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TBSliderButton.h; path = SliderButton/Lib/TBSliderButton.h; sourceTree = SOURCE_ROOT; };
 		01ECEF401839394400AD2D8B /* TBSliderButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TBSliderButton.m; path = SliderButton/Lib/TBSliderButton.m; sourceTree = SOURCE_ROOT; };
+		01ECEF4318398E5000AD2D8B /* handleArrowOff.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = handleArrowOff.png; path = SliderButton/Lib/Assets/handleArrowOff.png; sourceTree = SOURCE_ROOT; };
+		01ECEF4418398E5000AD2D8B /* handleArrowOn.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = handleArrowOn.png; path = SliderButton/Lib/Assets/handleArrowOn.png; sourceTree = SOURCE_ROOT; };
 		A5EB2F7C16A1E217006E4B6A /* SliderButton.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SliderButton.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A5EB2F8016A1E217006E4B6A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		A5EB2F8216A1E217006E4B6A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -147,6 +151,8 @@
 		A5EB2FAB16A1E874006E4B6A /* Assets */ = {
 			isa = PBXGroup;
 			children = (
+				01ECEF4318398E5000AD2D8B /* handleArrowOff.png */,
+				01ECEF4418398E5000AD2D8B /* handleArrowOn.png */,
 				01ECEF361839393300AD2D8B /* backgroundImageOff.png */,
 				01ECEF371839393300AD2D8B /* backgroundImageOn.png */,
 				01ECEF381839393300AD2D8B /* handleImageOff.png */,
@@ -184,6 +190,11 @@
 				CLASSPREFIX = TB;
 				LastUpgradeCheck = 0450;
 				ORGANIZATIONNAME = "Yari Dareglia";
+				TargetAttributes = {
+					A5EB2F7B16A1E217006E4B6A = {
+						DevelopmentTeam = KCL29RH4A8;
+					};
+				};
 			};
 			buildConfigurationList = A5EB2F7616A1E217006E4B6A /* Build configuration list for PBXProject "SliderButton" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -214,10 +225,12 @@
 				01ECEF351839370D00AD2D8B /* SliderButton-Info.plist in Resources */,
 				01ECEF3A1839393300AD2D8B /* backgroundImageOff.png in Resources */,
 				01ECEF1C1839350E00AD2D8B /* Default-568h@2x.png in Resources */,
+				01ECEF4618398E5000AD2D8B /* handleArrowOn.png in Resources */,
 				01ECEF13183934A800AD2D8B /* TBViewController.xib in Resources */,
 				01ECEF281839357400AD2D8B /* SliderButton.entitlements in Resources */,
 				01ECEF3B1839393300AD2D8B /* backgroundImageOn.png in Resources */,
 				01ECEF3C1839393300AD2D8B /* handleImageOff.png in Resources */,
+				01ECEF4518398E5000AD2D8B /* handleArrowOff.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,10 +329,12 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_IDENTITY = "iPhone Developer: Scott Richards (LSDP48E32L)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SliderButton/SliderButton-Prefix.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/SliderButton/SliderButton-Info.plist";
 				PRODUCT_NAME = SliderButton;
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -328,11 +343,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = "";
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Scott Richards (KCL29RH4A8)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "SliderButton/SliderButton-Prefix.pch";
 				INFOPLIST_FILE = "$(SRCROOT)/SliderButton/SliderButton-Info.plist";
 				PRODUCT_NAME = SliderButton;
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

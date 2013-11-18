@@ -12,8 +12,12 @@
 #define TB_SLIDER_SIZE 320                          //The width and the heigth of the slider
 #define TB_BACKGROUND_WIDTH 60                      //The width of the dark background
 #define TB_LINE_WIDTH 40                            //The width of the active area (the gradient) and the width of the handle
-#define TB_FONTSIZE 48                                  //The size of the textfield font
+/*#define TB_FONTSIZE 48                                  //The size of the textfield font
 #define TB_FONTFAMILY @"Futura-CondensedExtraBold"  //The font family of the textfield font
+*/
+
+#define TB_FONTSIZE 36                                  //The size of the textfield font
+#define TB_FONTFAMILY @"ArialMT"  //The font family of the textfield font
 
 @interface TBSliderButton : UIControl
 @property (strong, nonatomic) UIColor *bgColorOn;
@@ -32,9 +36,12 @@
 @property (assign, nonatomic) float labelStartXPos;
 @property (assign, nonatomic) float labelWidth;
 @property (assign, nonatomic) float buttonWidth;
+@property (assign, nonatomic) float handleWidth;
 @property (assign, nonatomic) float handlePos;
+@property (assign, nonatomic) float handleStartPos;
 @property (strong, nonatomic) UIImageView *bgImageView;
 @property (strong, nonatomic) UIImageView *handleImageView;
+@property (strong, nonatomic) UILabel *labelField;
 @property (strong, nonatomic) UIImage *bgImageOff;
 @property (strong, nonatomic) UIImage *handleImageOff;
 @property (strong, nonatomic) UIImage *bgImageOn;
