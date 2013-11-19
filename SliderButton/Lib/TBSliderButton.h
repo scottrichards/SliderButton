@@ -21,8 +21,9 @@
 
 @interface TBSliderButton : UIControl
 
-@property (strong, nonatomic) NSString *bgImageOnString;    // Change name bgImageOnString
-@property (strong, nonatomic) NSString *bgImageOffString;
+@property (assign, nonatomic) BOOL on;
+@property (strong, nonatomic) NSString *onBackgroundImageString;    // Change name bgImageOnString
+@property (strong, nonatomic) NSString *offBackgroundImageString;
 @property (strong, nonatomic) NSString *handleImageOnString;
 @property (strong, nonatomic) NSString *handleImageOffString;
 @property (strong, nonatomic) NSString *onStateString;

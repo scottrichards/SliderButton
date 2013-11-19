@@ -24,15 +24,15 @@
     TBSliderButton *slider = [[TBSliderButton alloc]initWithFrame:CGRectMake(10, 60, TB_SLIDER_SIZE, TB_SLIDER_SIZE)];
     
     //Define Target-Action behaviour
-    [slider addTarget:self action:@selector(newValue:) forControlEvents:UIControlEventValueChanged];
+    [slider addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
     
     [self.view addSubview:slider];
 }
 
 /** This function is called when Circular slider value changes **/
--(void)newValue:(TBSliderButton*)slider{
-    //TBSliderButton *slider = (TBSliderButton*)sender;
-//    NSLog(@"Handle Pos %f",slider.handlePos);
+-(void)switchChanged:(TBSliderButton*)sender{
+    TBSliderButton *slider = (TBSliderButton*)sender;
+    NSLog(@"Slider Switch is: %@",slider.on ? @"On" : @"Off");
 }
 
 - (void)didReceiveMemoryWarning

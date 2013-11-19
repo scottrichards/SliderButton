@@ -22,7 +22,7 @@
 @interface TBSliderButton(){
 }
 
-@property (assign, nonatomic) BOOL on;
+
 @property (assign, nonatomic) float panStartX;
 @property (assign, nonatomic) float labelStartXPos;
 @property (assign, nonatomic) float labelWidth;
@@ -30,22 +30,25 @@
 @property (assign, nonatomic) float handleWidth;
 @property (assign, nonatomic) float handlePos;
 @property (assign, nonatomic) float handleStartPos;
-@property (strong, nonatomic) UIImageView *bgImageView;
+@property (strong, nonatomic) UIImageView *backgroundImageView;
 @property (strong, nonatomic) UIImageView *handleImageView;
 @property (strong, nonatomic) UIView *buttonBackgroundView;
 @property (strong, nonatomic) UILabel *labelField;
-@property (strong, nonatomic) UIImage *bgImageOff;  // rename offBackgroundImage
-@property (strong, nonatomic) UIImage *handleImageOff;  // offHandleImage
-@property (strong, nonatomic) UIImage *bgImageOn;
-@property (strong, nonatomic) UIImage *handleImageOn;
-@property (strong, nonatomic) NSString *label;
+@property (strong, nonatomic) UIImage *offBackgroundImage;  // Off Button Background
+@property (strong, nonatomic) UIImage *offHandleImage;      // Off Handle Image
+@property (strong, nonatomic) UIImage *onBackgroundImage;
+@property (strong, nonatomic) UIImage *onHandleImage;
+@property (strong, nonatomic) NSString *labelString;
 
 @end
+
 
 
 #pragma mark - Implementation -
 
 @implementation TBSliderButton
+
+
 
 -(id)initWithFrame:(CGRect)frame{
     
@@ -54,22 +57,21 @@
     if (self) {
         self.opaque = NO;
         self.on = NO;
-        self.bgImageOffString = @"backgroundImageOff.png";
-        self.bgImageOnString = @"backgroundImageOn.png";
+        self.offBackgroundImageString = @"backgroundImageOff.png";
+        self.onBackgroundImageString = @"backgroundImageOn.png";
         
         self.handleImageOnString = @"handleArrowOn.png";
         self.handleImageOffString = @"handleArrowOff.png";
         self.onActionString = @"Connect";
         self.offActionString = @"Disconnect";
         
-        [self setBgImageOff:[UIImage imageNamed:self.bgImageOffString]];
-        [self setHandleImageOff:[UIImage imageNamed:self.handleImageOffString]];
+        [self setOffBackgroundImage:[UIImage imageNamed:self.offBackgroundImageString]];
+        [self setOffHandleImage:[UIImage imageNamed:self.handleImageOffString]];
         
-        [self setBgImageOn:[UIImage imageNamed:self.bgImageOnString]];
-        [self setHandleImageOn:[UIImage imageNamed:self.handleImageOnString]];
+        [self setOnBackgroundImage:[UIImage imageNamed:self.onBackgroundImageString]];
+        [self setOnHandleImage:[UIImage imageNamed:self.handleImageOnString]];
         
         [self setUpButton];
-//        [UISwit]
     }
     
     return self;
@@ -79,13 +81,20 @@
 {
     self.on = !self.on;
     [self setUpButton];
+    //Control value has changed, let's notify that
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
+
+- (void)initSubViews
+{
+    
 }
 
 - (void)setUpButton
 {
     // remove old views
     [self setBackgroundColor:[UIColor clearColor]];
-    [self.bgImageView removeFromSuperview];
+    [self.backgroundImageView removeFromSuperview];
     [self.handleImageView removeFromSuperview];
 //    [_textField removeFromSuperview];
     [self.labelField removeFromSuperview];
@@ -96,10 +105,10 @@
     UIFont *font = [UIFont systemFontOfSize:24];
     CGSize fontSize = [label sizeWithFont:font];
     [self setLabelWidth:fontSize.width];
-    CGSize imageSize = [self.on ? self.bgImageOn : self.bgImageOff size];
+    CGSize imageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
     self.buttonWidth = imageSize.width;     // the width of the button based on background image
-    self.bgImageView = [[UIImageView alloc] initWithImage: self.on ? self.bgImageOn : self.bgImageOff ];
-    self.handleImageView = [[UIImageView alloc] initWithImage: self.on ? self.handleImageOn : self.handleImageOff];
+    self.backgroundImageView = [[UIImageView alloc] initWithImage: self.on ? self.onBackgroundImage : self.offBackgroundImage ];
+    self.handleImageView = [[UIImageView alloc] initWithImage: self.on ? self.onHandleImage : self.offHandleImage];
     
     CGRect handleFrame = [self.handleImageView frame];
     self.handleWidth = handleFrame.size.width;
@@ -137,8 +146,8 @@
     [self.buttonBackgroundView setUserInteractionEnabled:NO];
     
     // Add subviews
-    [self addSubview:self.bgImageView];
-    [self.bgImageView addSubview:self.buttonBackgroundView];
+    [self addSubview:self.backgroundImageView];
+    [self.backgroundImageView addSubview:self.buttonBackgroundView];
     [self.buttonBackgroundView setClipsToBounds:YES];
     [self.buttonBackgroundView addSubview:self.handleImageView];
     [self.buttonBackgroundView addSubview:self.labelField];
@@ -169,8 +178,7 @@
     //Use the location to design the Handle
     continueTracking = [self handleEvent:lastPoint event:event];
     
-    //Control value has changed, let's notify that   
-    [self sendActionsForControlEvents:UIControlEventValueChanged];
+    
     
     return continueTracking;
 }
@@ -179,6 +187,7 @@
 -(void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
     [super endTrackingWithTouch:touch withEvent:event];
     NSLog(@"End Tacking With Touch");
+    
     self.panStartX = 0;
     [self returnToStartState];
 }
