@@ -21,6 +21,25 @@
 
 @interface TBSliderButton(){
 }
+
+@property (assign, nonatomic) BOOL on;
+@property (assign, nonatomic) float panStartX;
+@property (assign, nonatomic) float labelStartXPos;
+@property (assign, nonatomic) float labelWidth;
+@property (assign, nonatomic) float buttonWidth;
+@property (assign, nonatomic) float handleWidth;
+@property (assign, nonatomic) float handlePos;
+@property (assign, nonatomic) float handleStartPos;
+@property (strong, nonatomic) UIImageView *bgImageView;
+@property (strong, nonatomic) UIImageView *handleImageView;
+@property (strong, nonatomic) UIView *buttonBackgroundView;
+@property (strong, nonatomic) UILabel *labelField;
+@property (strong, nonatomic) UIImage *bgImageOff;  // rename offBackgroundImage
+@property (strong, nonatomic) UIImage *handleImageOff;  // offHandleImage
+@property (strong, nonatomic) UIImage *bgImageOn;
+@property (strong, nonatomic) UIImage *handleImageOn;
+@property (strong, nonatomic) NSString *label;
+
 @end
 
 
@@ -32,27 +51,25 @@
     
     self = [super initWithFrame:frame];
     
-    if(self){
+    if (self) {
         self.opaque = NO;
+        self.on = NO;
+        self.bgImageOffString = @"backgroundImageOff.png";
+        self.bgImageOnString = @"backgroundImageOn.png";
         
-
-        self.isOn = NO;
-        self.bgImageOffName = @"backgroundImageOff.png";
-        self.bgImageOnName = @"backgroundImageOn.png";
+        self.handleImageOnString = @"handleArrowOn.png";
+        self.handleImageOffString = @"handleArrowOff.png";
+        self.onActionString = @"Connect";
+        self.offActionString = @"Disconnect";
         
-        self.handleImageOnName = @"handleArrowOn.png";
-        self.handleImageOffName = @"handleArrowOff.png";
-        self.labelStringOffName = @"Connect";
-        self.labelStringOnName = @"Disconnect";
+        [self setBgImageOff:[UIImage imageNamed:self.bgImageOffString]];
+        [self setHandleImageOff:[UIImage imageNamed:self.handleImageOffString]];
         
-        [self setBgImageOff:[UIImage imageNamed:self.bgImageOffName]];
-        [self setHandleImageOff:[UIImage imageNamed:self.handleImageOffName]];
-        
-        [self setBgImageOn:[UIImage imageNamed:self.bgImageOnName]];
-        [self setHandleImageOn:[UIImage imageNamed:self.handleImageOnName]];
+        [self setBgImageOn:[UIImage imageNamed:self.bgImageOnString]];
+        [self setHandleImageOn:[UIImage imageNamed:self.handleImageOnString]];
         
         [self setUpButton];
-
+//        [UISwit]
     }
     
     return self;
@@ -60,12 +77,13 @@
 
 - (void)toggleState
 {
-    self.isOn = !self.isOn;
+    self.on = !self.on;
     [self setUpButton];
 }
 
 - (void)setUpButton
 {
+    // remove old views
     [self setBackgroundColor:[UIColor clearColor]];
     [self.bgImageView removeFromSuperview];
     [self.handleImageView removeFromSuperview];
@@ -73,15 +91,15 @@
     [self.labelField removeFromSuperview];
     [self.buttonBackgroundView removeFromSuperview];
     // get text for the button label based on the button state
-    NSString *label = self.isOn ? self.labelStringOnName : self.labelStringOffName;
+    NSString *label = self.on ? self.offActionString : self.onActionString;
 //    UIFont *font = [UIFont fontWithName:TB_FONTFAMILY size:TB_FONTSIZE];
     UIFont *font = [UIFont systemFontOfSize:24];
     CGSize fontSize = [label sizeWithFont:font];
     [self setLabelWidth:fontSize.width];
-    CGSize imageSize = [self.isOn ? self.bgImageOn : self.bgImageOff size];
+    CGSize imageSize = [self.on ? self.bgImageOn : self.bgImageOff size];
     self.buttonWidth = imageSize.width;     // the width of the button based on background image
-    self.bgImageView = [[UIImageView alloc] initWithImage: self.isOn ? self.bgImageOn : self.bgImageOff ];
-    self.handleImageView = [[UIImageView alloc] initWithImage: self.isOn ? self.handleImageOn : self.handleImageOff];
+    self.bgImageView = [[UIImageView alloc] initWithImage: self.on ? self.bgImageOn : self.bgImageOff ];
+    self.handleImageView = [[UIImageView alloc] initWithImage: self.on ? self.handleImageOn : self.handleImageOff];
     
     CGRect handleFrame = [self.handleImageView frame];
     self.handleWidth = handleFrame.size.width;
@@ -90,10 +108,11 @@
     CGRect backgroundFrame = CGRectMake(MARGIN,0,self.buttonWidth - (MARGIN * 2),imageSize.height);
     self.buttonBackgroundView = [[UIView alloc] initWithFrame:backgroundFrame];
     [self.buttonBackgroundView setBackgroundColor:[UIColor clearColor]];
-    if (self.isOn) {    // if the state is on move handle to right, to indicate swipe left to turn off
+    if (self.on) {    // if the state is on move handle to right, to indicate swipe left to turn off
         handleFrame.origin.x = self.buttonWidth - (self.handleWidth + MARGIN);
-    } else
+    } else {
         handleFrame.origin.x = 0;
+    }
     self.handleStartPos = handleFrame.origin.x;
     [self.handleImageView setFrame:handleFrame];
     //Using a TextField area we can easily modify the control to get user input from this field
@@ -103,11 +122,13 @@
                                       fontSize.width,
                                       fontSize.height);
     
+    // Setup the Label
     self.labelField = [[UILabel alloc] initWithFrame:textFieldRect];
-    if (self.isOn)
+    if (self.on) {
         [self.labelField setTextAlignment:NSTextAlignmentLeft];
-    else
+    } else {
         [self.labelField setTextAlignment:NSTextAlignmentLeft];
+    }
     [self.labelField setFont:font];
     [self.labelField setText:label];
     [self.labelField setTextColor:[UIColor blackColor]];
@@ -115,6 +136,7 @@
     [self.labelField setLineBreakMode:NSLineBreakByClipping ];
     [self.buttonBackgroundView setUserInteractionEnabled:NO];
     
+    // Add subviews
     [self addSubview:self.bgImageView];
     [self.bgImageView addSubview:self.buttonBackgroundView];
     [self.buttonBackgroundView setClipsToBounds:YES];
@@ -145,7 +167,7 @@
     CGPoint lastPoint = [touch locationInView:self];
 
     //Use the location to design the Handle
-    continueTracking = [self movehandle:lastPoint event:event];
+    continueTracking = [self handleEvent:lastPoint event:event];
     
     //Control value has changed, let's notify that   
     [self sendActionsForControlEvents:UIControlEventValueChanged];
@@ -193,26 +215,22 @@
 #pragma mark - Math -
 
 /** Move the Handle **/
--(BOOL)movehandle:(CGPoint)lastPoint event:(UIEvent *)event {
+-(BOOL)handleEvent:(CGPoint)lastPoint event:(UIEvent *)event {
     
-//    NSLog(@"x: %f, y: %f",lastPoint.x,lastPoint.y);
-//    NSLog(@"DeltaX: %f",lastPoint.x - self.panStartX);
     BOOL continueHandling = YES;
     CGRect handleFrame = [self.handleImageView frame];
-//    NSLog(@"oldHandle x = %f", handleFrame.origin.x);
     float deltaX =  lastPoint.x - self.panStartX;
-    if (self.isOn) {
-         deltaX = deltaX > 0 ? 0 : deltaX;
-        handleFrame.origin.x = self.handleStartPos + deltaX;
-        if (handleFrame.origin.x < 0)
+    if (self.on) {
+        deltaX = deltaX > 0 ? 0 : deltaX;   // prevent moving handles outside of the button
+        handleFrame.origin.x = self.handleStartPos + deltaX;    // deltaX is negative when sliding left
+        if (handleFrame.origin.x < 0)   // stop tracking when we slide all the way to the left
             continueHandling = NO;
     } else {
-        deltaX = deltaX < 0 ? 0 : deltaX;
+        deltaX = deltaX < 0 ? 0 : deltaX;   // prevent moving handles outside of the button
         handleFrame.origin.x = deltaX;
-        if (handleFrame.origin.x + self.handleWidth > self.buttonWidth)
+        if (handleFrame.origin.x + self.handleWidth > self.buttonWidth)  // stop tracking when we slide all the way to the right
             continueHandling = NO;
     }
-//    NSLog(@"newHandleFrame.x = %f",handleFrame.origin.x);
     // check if we dragged outside the button and stop dragging change button state
     if (!continueHandling) {
         [self cancelTrackingWithEvent:event];
@@ -224,15 +242,7 @@
         [self.handleImageView setFrame:handleFrame];
         
         CGRect textFrame = [self.labelField frame];
-        
-        if (self.isOn) {
-            textFrame.origin.x = self.labelStartXPos + deltaX;
-//            textFrame.size.width = self.labelWidth + deltaX + self.labelStartXPos - MARGIN;
-        } else {
-            textFrame.origin.x = self.labelStartXPos + deltaX;
-//            textFrame.size.width = self.labelWidth - deltaX + self.labelStartXPos - MARGIN;
-        }
- //       NSLog(@"textFrame x = %f", textFrame.origin.x);
+        textFrame.origin.x = self.labelStartXPos + deltaX;
         if (textFrame.size.width < 0 )
             textFrame.size.width = 0;
         [self.labelField setFrame:textFrame];

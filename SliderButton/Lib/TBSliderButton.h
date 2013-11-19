@@ -20,32 +20,14 @@
 #define TB_FONTFAMILY @"ArialMT"  //The font family of the textfield font
 
 @interface TBSliderButton : UIControl
-@property (strong, nonatomic) UIColor *bgColorOn;
-@property (strong, nonatomic) UIColor *bgColorOff;
-@property (strong, nonatomic) UIColor *fgColorOn;
-@property (strong, nonatomic) UIColor *fgColorOff;
-@property (strong, nonatomic) NSString *bgImageOnName;
-@property (strong, nonatomic) NSString *bgImageOffName;
-@property (strong, nonatomic) NSString *handleImageOnName;
-@property (strong, nonatomic) NSString *handleImageOffName;
-@property (strong, nonatomic) NSString *labelStringOnName;
-@property (strong, nonatomic) NSString *labelStringOffName;
 
-@property (assign, nonatomic) BOOL isOn;
-@property (assign, nonatomic) float panStartX;
-@property (assign, nonatomic) float labelStartXPos;
-@property (assign, nonatomic) float labelWidth;
-@property (assign, nonatomic) float buttonWidth;
-@property (assign, nonatomic) float handleWidth;
-@property (assign, nonatomic) float handlePos;
-@property (assign, nonatomic) float handleStartPos;
-@property (strong, nonatomic) UIImageView *bgImageView;
-@property (strong, nonatomic) UIImageView *handleImageView;
-@property (strong, nonatomic) UIView *buttonBackgroundView;
-@property (strong, nonatomic) UILabel *labelField;
-@property (strong, nonatomic) UIImage *bgImageOff;
-@property (strong, nonatomic) UIImage *handleImageOff;
-@property (strong, nonatomic) UIImage *bgImageOn;
-@property (strong, nonatomic) UIImage *handleImageOn;
-@property (strong, nonatomic) NSString *label;
+@property (strong, nonatomic) NSString *bgImageOnString;    // Change name bgImageOnString
+@property (strong, nonatomic) NSString *bgImageOffString;
+@property (strong, nonatomic) NSString *handleImageOnString;
+@property (strong, nonatomic) NSString *handleImageOffString;
+@property (strong, nonatomic) NSString *onStateString;
+@property (strong, nonatomic) NSString *offStateString;
+@property (strong, nonatomic) NSString *onActionString;
+@property (strong, nonatomic) NSString *offActionString;
+
 @end
