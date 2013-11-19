@@ -14,7 +14,7 @@
 //#define TB_SAFEAREA_PADDING 60
 
 
-#define MARGIN 8  // space on the right to start clipping
+#define MARGIN 4  // space on the right to start clipping
 
 
 #pragma mark - Private -
@@ -36,7 +36,7 @@
         self.opaque = NO;
         
 
-        self.isOn = NO;
+        self.isOn = YES;
         self.bgImageOffName = @"backgroundImageOff.png";
         self.bgImageOnName = @"backgroundImageOn.png";
         
@@ -66,24 +66,32 @@
 
 - (void)setUpButton
 {
+    [self setBackgroundColor:[UIColor clearColor]];
     [self.bgImageView removeFromSuperview];
     [self.handleImageView removeFromSuperview];
 //    [_textField removeFromSuperview];
     [self.labelField removeFromSuperview];
+    [self.buttonBackgroundView removeFromSuperview];
     // get text for the button label based on the button state
     NSString *label = self.isOn ? self.labelStringOnName : self.labelStringOffName;
 //    UIFont *font = [UIFont fontWithName:TB_FONTFAMILY size:TB_FONTSIZE];
-    UIFont *font = [UIFont systemFontOfSize:28];
+    UIFont *font = [UIFont systemFontOfSize:24];
     CGSize fontSize = [label sizeWithFont:font];
     [self setLabelWidth:fontSize.width];
     CGSize imageSize = [self.isOn ? self.bgImageOn : self.bgImageOff size];
     self.buttonWidth = imageSize.width;     // the width of the button based on background image
     self.bgImageView = [[UIImageView alloc] initWithImage: self.isOn ? self.bgImageOn : self.bgImageOff ];
     self.handleImageView = [[UIImageView alloc] initWithImage: self.isOn ? self.handleImageOn : self.handleImageOff];
+    
     CGRect handleFrame = [self.handleImageView frame];
     self.handleWidth = handleFrame.size.width;
+    
+    // set up this background frame for clipping within the contents of the button
+    CGRect backgroundFrame = CGRectMake(MARGIN,0,self.buttonWidth - (MARGIN * 2),imageSize.height);
+    self.buttonBackgroundView = [[UIView alloc] initWithFrame:backgroundFrame];
+    [self.buttonBackgroundView setBackgroundColor:[UIColor clearColor]];
     if (self.isOn) {    // if the state is on move handle to right, to indicate swipe left to turn off
-        handleFrame.origin.x = self.buttonWidth - self.handleWidth;
+        handleFrame.origin.x = self.buttonWidth - (self.handleWidth + MARGIN);
     } else
         handleFrame.origin.x = 0;
     self.handleStartPos = handleFrame.origin.x;
@@ -97,17 +105,21 @@
     
     self.labelField = [[UILabel alloc] initWithFrame:textFieldRect];
     if (self.isOn)
-        [self.labelField setTextAlignment:NSTextAlignmentRight];
+        [self.labelField setTextAlignment:NSTextAlignmentLeft];
     else
         [self.labelField setTextAlignment:NSTextAlignmentLeft];
     [self.labelField setFont:font];
     [self.labelField setText:label];
-    [self.labelField setTextColor:[UIColor blackColor]];
+    [self.labelField setTextColor:[UIColor whiteColor]];
     [self.labelField setBackgroundColor:[UIColor clearColor]];
     [self.labelField setLineBreakMode:NSLineBreakByClipping ];
+    [self.buttonBackgroundView setUserInteractionEnabled:NO];
+    
     [self addSubview:self.bgImageView];
-    [self addSubview:self.handleImageView];
-    [self addSubview:self.labelField];
+    [self.bgImageView addSubview:self.buttonBackgroundView];
+    [self.buttonBackgroundView setClipsToBounds:YES];
+    [self.buttonBackgroundView addSubview:self.handleImageView];
+    [self.buttonBackgroundView addSubview:self.labelField];
     self.panStartX = 0;
     [self setNeedsDisplay];
 }
@@ -214,11 +226,11 @@
         CGRect textFrame = [self.labelField frame];
         
         if (self.isOn) {
-            textFrame.origin.x = 0 + MARGIN;
-            textFrame.size.width = self.labelWidth + deltaX + self.labelStartXPos - MARGIN;
+            textFrame.origin.x = self.labelStartXPos + deltaX;
+//            textFrame.size.width = self.labelWidth + deltaX + self.labelStartXPos - MARGIN;
         } else {
             textFrame.origin.x = self.labelStartXPos + deltaX;
-            textFrame.size.width = self.labelWidth - deltaX + self.labelStartXPos - MARGIN;
+//            textFrame.size.width = self.labelWidth - deltaX + self.labelStartXPos - MARGIN;
         }
  //       NSLog(@"textFrame x = %f", textFrame.origin.x);
         if (textFrame.size.width < 0 )

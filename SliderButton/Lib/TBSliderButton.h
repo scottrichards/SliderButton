@@ -41,6 +41,7 @@
 @property (assign, nonatomic) float handleStartPos;
 @property (strong, nonatomic) UIImageView *bgImageView;
 @property (strong, nonatomic) UIImageView *handleImageView;
+@property (strong, nonatomic) UIView *buttonBackgroundView;
 @property (strong, nonatomic) UILabel *labelField;
 @property (strong, nonatomic) UIImage *bgImageOff;
 @property (strong, nonatomic) UIImage *handleImageOff;
