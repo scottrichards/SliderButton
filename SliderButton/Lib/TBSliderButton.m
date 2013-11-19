@@ -36,7 +36,7 @@
         self.opaque = NO;
         
 
-        self.isOn = YES;
+        self.isOn = NO;
         self.bgImageOffName = @"backgroundImageOff.png";
         self.bgImageOnName = @"backgroundImageOn.png";
         
@@ -110,7 +110,7 @@
         [self.labelField setTextAlignment:NSTextAlignmentLeft];
     [self.labelField setFont:font];
     [self.labelField setText:label];
-    [self.labelField setTextColor:[UIColor whiteColor]];
+    [self.labelField setTextColor:[UIColor blackColor]];
     [self.labelField setBackgroundColor:[UIColor clearColor]];
     [self.labelField setLineBreakMode:NSLineBreakByClipping ];
     [self.buttonBackgroundView setUserInteractionEnabled:NO];
