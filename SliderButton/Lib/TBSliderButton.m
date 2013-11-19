@@ -71,7 +71,7 @@
         [self setOnBackgroundImage:[UIImage imageNamed:self.onBackgroundImageString]];
         [self setOnHandleImage:[UIImage imageNamed:self.handleImageOnString]];
         
-        [self setUpButton];
+        [self setUpViews];
     }
     
     return self;
@@ -80,25 +80,47 @@
 - (void)toggleState
 {
     self.on = !self.on;
-    [self setUpButton];
+
+    CGSize imageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
+    self.buttonWidth = imageSize.width;
+    self.backgroundImageView.image = self.on ? self.onBackgroundImage : self.offBackgroundImage;
+    
+    self.handleImageView.image =  self.on ? self.onHandleImage : self.offHandleImage;
+
+    CGRect handleFrame = [self.handleImageView frame];
+    self.handleWidth = handleFrame.size.width;
+    if (self.on) {    // if the state is on move handle to right, to indicate swipe left to turn off
+        handleFrame.origin.x = self.buttonWidth - (self.handleWidth + MARGIN);
+    } else {
+        handleFrame.origin.x = 0;
+    }
+    
+    self.handleStartPos = handleFrame.origin.x;
+    [self.handleImageView setFrame:handleFrame];
+    
+    // Setup Switch State Label
+    NSString *label = self.on ? self.offActionString : self.onActionString;
+    UIFont *font = [UIFont systemFontOfSize:24];
+    CGSize fontSize = [label sizeWithFont:font];
+    [self.labelField setText:label];
+    //Using a TextField area we can easily modify the control to get user input from this field
+    self.labelStartXPos = (imageSize.width  - fontSize.width) /2;
+    CGRect textFieldRect = CGRectMake(self.labelStartXPos,
+                                      (imageSize.height - fontSize.height) /2,
+                                      fontSize.width,
+                                      fontSize.height);
+    
+    [self.labelField setFrame:textFieldRect];
+    
+    self.panStartX = 0;
+    [self setNeedsDisplay];
+    
     //Control value has changed, let's notify that
     [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
-- (void)initSubViews
+- (void)setUpViews
 {
-    
-}
-
-- (void)setUpButton
-{
-    // remove old views
-    [self setBackgroundColor:[UIColor clearColor]];
-    [self.backgroundImageView removeFromSuperview];
-    [self.handleImageView removeFromSuperview];
-//    [_textField removeFromSuperview];
-    [self.labelField removeFromSuperview];
-    [self.buttonBackgroundView removeFromSuperview];
     // get text for the button label based on the button state
     NSString *label = self.on ? self.offActionString : self.onActionString;
 //    UIFont *font = [UIFont fontWithName:TB_FONTFAMILY size:TB_FONTSIZE];
@@ -133,11 +155,7 @@
     
     // Setup the Label
     self.labelField = [[UILabel alloc] initWithFrame:textFieldRect];
-    if (self.on) {
-        [self.labelField setTextAlignment:NSTextAlignmentLeft];
-    } else {
-        [self.labelField setTextAlignment:NSTextAlignmentLeft];
-    }
+//    [self.labelField setTextAlignment:NSTextAlignmentLeft];
     [self.labelField setFont:font];
     [self.labelField setText:label];
     [self.labelField setTextColor:[UIColor blackColor]];
