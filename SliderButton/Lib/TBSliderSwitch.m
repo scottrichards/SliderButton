@@ -15,6 +15,8 @@
 
 
 #define MARGIN 4  // space on the right to start clipping
+#define FONT_SIZE 24
+#define OFFSET_TO_CENTER_ACTION_LABEL 40
 
 
 #pragma mark - Private -
@@ -81,16 +83,21 @@
     return self;
 }
 
-- (void)toggleState
+// Called on init to setup the views for the elements of the controls
+- (void)setUpViews
 {
-    self.on = !self.on;
-
+    // SWITCH BACKGROUND setup
     CGSize backgroundImageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
-    self.buttonWidth = backgroundImageSize.width;
-    self.backgroundImageView.image = self.on ? self.onBackgroundImage : self.offBackgroundImage;
+    self.buttonWidth = backgroundImageSize.width;     // the width of the button based on background image
+    self.backgroundImageView = [[UIImageView alloc] initWithImage: self.on ? self.onBackgroundImage : self.offBackgroundImage ];
     
-    self.handleImageView.image =  self.on ? self.onHandleImage : self.offHandleImage;
-
+    // BACKGROUND CLIP RECT - set up this background frame for clipping within the contents of the button
+    CGRect backgroundFrame = CGRectMake(MARGIN,0,self.buttonWidth - (MARGIN * 2),backgroundImageSize.height);
+    self.clipToButtonBackgroundView = [[UIView alloc] initWithFrame:backgroundFrame];
+    [self.clipToButtonBackgroundView setUserInteractionEnabled:NO];
+    [self.clipToButtonBackgroundView setBackgroundColor:[UIColor clearColor]];
+    
+    self.handleImageView = [[UIImageView alloc] initWithImage: self.on ? self.onHandleImage : self.offHandleImage];
     CGRect handleFrame = [self.handleImageView frame];
     self.handleWidth = handleFrame.size.width;
     if (self.on) {    // if the state is on move handle to right, to indicate swipe left to turn off
@@ -98,34 +105,98 @@
     } else {
         handleFrame.origin.x = 0;
     }
-    
     self.handleStartPos = handleFrame.origin.x;
     [self.handleImageView setFrame:handleFrame];
     
-    // Setup Switch State Label
-    NSString *label = self.on ? self.onStateString : self.offStateString;
-    UIFont *font = [UIFont systemFontOfSize:24];
-    CGSize fontSize = [label sizeWithFont:font];
-    [self.currentStateLabel setText:label];
-    //Using a TextField area we can easily modify the control to get user input from this field
-    self.labelStartXPos = (backgroundImageSize.width  - fontSize.width) /2;
+    // STATE LABEL FIELD
+    // get text for the button label based on the button state
+    NSString *currentStateLabelString = self.on ? self.onStateString : self.offStateString;
+    //    UIFont *font = [UIFont fontWithName:TB_FONTFAMILY size:TB_FONTSIZE];
+    UIFont *font = [UIFont systemFontOfSize:FONT_SIZE];
+    CGSize currentStateLabelSize = [currentStateLabelString sizeWithFont:font];
+    [self setLabelWidth:currentStateLabelSize.width];
+    self.labelStartXPos = (backgroundImageSize.width  - currentStateLabelSize.width) /2;
     CGRect textFieldRect = CGRectMake(self.labelStartXPos,
-                                      (backgroundImageSize.height - fontSize.height) /2,
-                                      fontSize.width,
-                                      fontSize.height);
+                                      (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                                      currentStateLabelSize.width,
+                                      currentStateLabelSize.height);
+    self.currentStateLabel = [[UILabel alloc] initWithFrame:textFieldRect];
+    [self.currentStateLabel setFont:font];
+    [self.currentStateLabel setText:currentStateLabelString];
+    [self.currentStateLabel setTextColor:[UIColor blackColor]];
+    [self.currentStateLabel setBackgroundColor:[UIColor clearColor]];
+    [self.currentStateLabel setLineBreakMode:NSLineBreakByClipping ];
     
-    [self.currentStateLabel setFrame:textFieldRect];
     
     // ACTION LABEL
     // get text for the button label based on the button state
     NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
     CGSize actionLabelSize = [actionLabel sizeWithFont:font];
     
+    self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - OFFSET_TO_CENTER_ACTION_LABEL);
+    CGRect actionLabelRect = CGRectMake(self.actionLabelStartXPos,
+                                        (backgroundImageSize.height - actionLabelSize.height) /2,
+                                        actionLabelSize.width,
+                                        actionLabelSize.height);
+    self.actionStateLabel = [[UILabel alloc] initWithFrame:actionLabelRect];
+    [self.actionStateLabel setText:actionLabel];
+    [self.actionStateLabel setFont:font];
+    [self.actionStateLabel setTextColor:[UIColor blackColor]];
+    
+    // Add subviews
+    [self addSubview:self.backgroundImageView];
+    [self.backgroundImageView addSubview:self.clipToButtonBackgroundView];
+    [self.clipToButtonBackgroundView setClipsToBounds:YES];
+    [self.clipToButtonBackgroundView addSubview:self.handleImageView];
+    [self.clipToButtonBackgroundView addSubview:self.currentStateLabel];
+    [self.clipToButtonBackgroundView addSubview:self.actionStateLabel];
+    self.panStartX = 0;
+    [self setNeedsDisplay];
+}
+
+// Inovked when the state of the switch is changed, updates value and sets display accordingly
+- (void)toggleState
+{
+    self.on = !self.on;
+
+    // SWITCH BACKGROUND setup
+    CGSize backgroundImageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
+    self.buttonWidth = backgroundImageSize.width;
+    self.backgroundImageView.image = self.on ? self.onBackgroundImage : self.offBackgroundImage;
+    
+    // HANDLE
+    self.handleImageView.image =  self.on ? self.onHandleImage : self.offHandleImage;
+    CGRect handleFrame = [self.handleImageView frame];
+    self.handleWidth = handleFrame.size.width;
+    if (self.on) {    // if the state is on move handle to right, to indicate swipe left to turn off
+        handleFrame.origin.x = self.buttonWidth - (self.handleWidth + MARGIN);
+    } else {
+        handleFrame.origin.x = 0;
+    }
+    self.handleStartPos = handleFrame.origin.x;
+    [self.handleImageView setFrame:handleFrame];
+    
+    // CURRENT STATE LABEL - get text for the button label based on the button state
+    NSString *currentStateLabelString = self.on ? self.onStateString : self.offStateString;
+    UIFont *font = [UIFont systemFontOfSize:FONT_SIZE];
+    CGSize currentStateLabelSize = [currentStateLabelString sizeWithFont:font];
+    [self.currentStateLabel setText:currentStateLabelString];
+    //Using a TextField area we can easily modify the control to get user input from this field
+    self.labelStartXPos = (backgroundImageSize.width  - currentStateLabelSize.width) /2;
+    CGRect textFieldRect = CGRectMake(self.labelStartXPos,
+                                      (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                                      currentStateLabelSize.width,
+                                      currentStateLabelSize.height);
+    [self.currentStateLabel setFrame:textFieldRect];
+    
+    // ACTION LABEL - text to indicate the action which fades in as user swipes
+    NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
+    CGSize actionLabelSize = [actionLabel sizeWithFont:font];
     if (self.on) {
-        self.actionLabelStartXPos = backgroundImageSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - 40;
+        self.actionLabelStartXPos = backgroundImageSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - OFFSET_TO_CENTER_ACTION_LABEL;
         NSLog(@"actionLabelStartXPos = %f",self.actionLabelStartXPos);
     } else {
-        self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - 40);
+        self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - OFFSET_TO_CENTER_ACTION_LABEL);
     }
     CGRect actionLabelRect = CGRectMake(self.actionLabelStartXPos,
                                         (backgroundImageSize.height - actionLabelSize.height) /2,
@@ -142,82 +213,6 @@
     
     //Control value has changed, let's notify that
     [self sendActionsForControlEvents:UIControlEventValueChanged];
-}
-
-- (void)setUpViews
-{
-    CGSize backgroundImageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
-    self.buttonWidth = backgroundImageSize.width;     // the width of the button based on background image
-    self.backgroundImageView = [[UIImageView alloc] initWithImage: self.on ? self.onBackgroundImage : self.offBackgroundImage ];
-    
-    // set up this background frame for clipping within the contents of the button
-    CGRect backgroundFrame = CGRectMake(MARGIN,0,self.buttonWidth - (MARGIN * 2),backgroundImageSize.height);
-    self.clipToButtonBackgroundView = [[UIView alloc] initWithFrame:backgroundFrame];
-    [self.clipToButtonBackgroundView setUserInteractionEnabled:NO];
-    [self.clipToButtonBackgroundView setBackgroundColor:[UIColor clearColor]];
-    
-    self.handleImageView = [[UIImageView alloc] initWithImage: self.on ? self.onHandleImage : self.offHandleImage];
-    
-    CGRect handleFrame = [self.handleImageView frame];
-    self.handleWidth = handleFrame.size.width;
-    
-
-    if (self.on) {    // if the state is on move handle to right, to indicate swipe left to turn off
-        handleFrame.origin.x = self.buttonWidth - (self.handleWidth + MARGIN);
-    } else {
-        handleFrame.origin.x = 0;
-    }
-    self.handleStartPos = handleFrame.origin.x;
-    [self.handleImageView setFrame:handleFrame];
-    
-    // STATE LABEL FIELD
-    // get text for the button label based on the button state
-    NSString *stateLabel = self.on ? self.onStateString : self.offStateString;
-    //    UIFont *font = [UIFont fontWithName:TB_FONTFAMILY size:TB_FONTSIZE];
-    UIFont *font = [UIFont systemFontOfSize:24];
-    CGSize fontSize = [stateLabel sizeWithFont:font];
-    [self setLabelWidth:fontSize.width];
-
-    self.labelStartXPos = (backgroundImageSize.width  - fontSize.width) /2;
-    CGRect textFieldRect = CGRectMake(self.labelStartXPos,
-                                      (backgroundImageSize.height - fontSize.height) /2,
-                                      fontSize.width,
-                                      fontSize.height);
-    
-    // Setup the Label
-    self.currentStateLabel = [[UILabel alloc] initWithFrame:textFieldRect];
-    [self.currentStateLabel setFont:font];
-    [self.currentStateLabel setText:stateLabel];
-    [self.currentStateLabel setTextColor:[UIColor blackColor]];
-    [self.currentStateLabel setBackgroundColor:[UIColor clearColor]];
-    [self.currentStateLabel setLineBreakMode:NSLineBreakByClipping ];
-    
-    
-    // ACTION LABEL
-    // get text for the button label based on the button state
-    NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
-    CGSize actionLabelSize = [actionLabel sizeWithFont:font];
-    
-    self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - 20);
-    NSLog(@"actionLabelStartXPos %f",self.actionLabelStartXPos);
-    CGRect actionLabelRect = CGRectMake(self.actionLabelStartXPos,
-                                      (backgroundImageSize.height - actionLabelSize.height) /2,
-                                      actionLabelSize.width,
-                                      actionLabelSize.height);
-    self.actionStateLabel = [[UILabel alloc] initWithFrame:actionLabelRect];
-    [self.actionStateLabel setText:actionLabel];
-    [self.actionStateLabel setFont:font];
-    [self.actionStateLabel setTextColor:[UIColor blackColor]];
-    
-    // Add subviews
-    [self addSubview:self.backgroundImageView];
-    [self.backgroundImageView addSubview:self.clipToButtonBackgroundView];
-    [self.clipToButtonBackgroundView setClipsToBounds:YES];
-    [self.clipToButtonBackgroundView addSubview:self.handleImageView];
-    [self.clipToButtonBackgroundView addSubview:self.currentStateLabel];
-    [self.clipToButtonBackgroundView addSubview:self.actionStateLabel];
-    self.panStartX = 0;
-    [self setNeedsDisplay];
 }
 
 #pragma mark - UIControl Override -
@@ -257,7 +252,7 @@
     [self returnToStartState];
 }
 
-
+// Called when user does not complete drag to toggle the switch value returns handle and labels to their values before dragging commenced
 -(void)returnToStartState
 {
     CGRect handleFrame = [self.handleImageView frame];
@@ -292,6 +287,7 @@
 
 #pragma mark - Math -
 
+// return a number from 0 -> 1 to indicate the position of the handle while it is being dragged to toggle the state of the switch. Note that the value always goes from 0 to 1 whether you are dragging from left to right to enable switch or right to left to disable the switch
 -(float)calculateHandlePos:(float)deltaX
 {
     
@@ -300,7 +296,7 @@
     return fabs(fractionValue);
 }
 
-/** Move the Handle **/
+/** Handle a tracking event by moving the handle and labels **/
 -(BOOL)handleTrackingEvent:(CGPoint)lastPoint event:(UIEvent *)event {
     
     BOOL continueHandling = YES;
@@ -335,7 +331,6 @@
         
         CGRect actionLabelFrame = [self.actionStateLabel frame];
         actionLabelFrame.origin.x = self.actionLabelStartXPos + deltaX;
-        NSLog(@"actionLabelFrame.origin.x: %f",actionLabelFrame.origin.x);
         [self.actionStateLabel setAlpha:self.handlePos];
         [self.actionStateLabel setFrame:actionLabelFrame];
         
