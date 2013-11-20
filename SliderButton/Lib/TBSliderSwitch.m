@@ -121,7 +121,12 @@
     NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
     CGSize actionLabelSize = [actionLabel sizeWithFont:font];
     
-    self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - 20);
+    if (self.on) {
+        self.actionLabelStartXPos = backgroundImageSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - 40;
+        NSLog(@"actionLabelStartXPos = %f",self.actionLabelStartXPos);
+    } else {
+        self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - 40);
+    }
     CGRect actionLabelRect = CGRectMake(self.actionLabelStartXPos,
                                         (backgroundImageSize.height - actionLabelSize.height) /2,
                                         actionLabelSize.width,
@@ -265,7 +270,7 @@
     actionLabelFrame.origin.x = self.actionLabelStartXPos;
     
     [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:2];
+    [UIView setAnimationDuration:.2];
     [UIView setAnimationDelay:.05];
     [UIView setAnimationCurve:UIViewAnimationCurveLinear];
     [self.actionStateLabel setAlpha:0];
@@ -291,7 +296,8 @@
 {
     
     float fractionValue = (deltaX/(self.buttonWidth - self.handleWidth));
-    return fractionValue;
+    NSLog(@"HandlePos: %f",fractionValue);
+    return fabs(fractionValue);
 }
 
 /** Move the Handle **/
@@ -309,7 +315,7 @@
     } else {
         deltaX = deltaX < 0 ? 0 : deltaX;   // prevent moving handles outside of the button
         handleFrame.origin.x = deltaX;
-        if (handleFrame.origin.x + self.handleWidth > self.buttonWidth)  // stop tracking when we slide all the way to the right
+        if (handleFrame.origin.x + self.handleWidth + MARGIN > self.buttonWidth)  // stop tracking when we slide all the way to the right
             continueHandling = NO;
     }
     // check if we dragged outside the button and stop dragging change button state
@@ -329,6 +335,7 @@
         
         CGRect actionLabelFrame = [self.actionStateLabel frame];
         actionLabelFrame.origin.x = self.actionLabelStartXPos + deltaX;
+        NSLog(@"actionLabelFrame.origin.x: %f",actionLabelFrame.origin.x);
         [self.actionStateLabel setAlpha:self.handlePos];
         [self.actionStateLabel setFrame:actionLabelFrame];
         
