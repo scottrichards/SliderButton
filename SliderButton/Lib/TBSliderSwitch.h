@@ -19,7 +19,7 @@
 #define TB_FONTSIZE 36                                  //The size of the textfield font
 #define TB_FONTFAMILY @"ArialMT"  //The font family of the textfield font
 
-@interface TBSliderButton : UIControl
+@interface TBSliderSwitch : UIControl
 
 @property (assign, nonatomic) BOOL on;
 @property (strong, nonatomic) NSString *onBackgroundImageString;    // Change name bgImageOnString

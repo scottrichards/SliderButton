@@ -7,7 +7,7 @@
 //
 
 #import "TBViewController.h"
-#import "TBSliderButton.h"
+#import "TBSliderSwitch.h"
 
 @interface TBViewController ()
 
@@ -21,7 +21,7 @@
     self.view.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:1];
     
     //Create the Circular Slider
-    TBSliderButton *slider = [[TBSliderButton alloc]initWithFrame:CGRectMake(10, 60, TB_SLIDER_SIZE, TB_SLIDER_SIZE)];
+    TBSliderSwitch *slider = [[TBSliderSwitch alloc]initWithFrame:CGRectMake(10, 60, TB_SLIDER_SIZE, TB_SLIDER_SIZE)];
     
     //Define Target-Action behaviour
     [slider addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
@@ -30,8 +30,8 @@
 }
 
 /** This function is called when Circular slider value changes **/
--(void)switchChanged:(TBSliderButton*)sender{
-    TBSliderButton *slider = (TBSliderButton*)sender;
+-(void)switchChanged:(TBSliderSwitch*)sender{
+    TBSliderSwitch *slider = (TBSliderSwitch*)sender;
     NSLog(@"Slider Switch is: %@",slider.on ? @"On" : @"Off");
 }
 

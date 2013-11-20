@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Yari Dareglia. All rights reserved.
 //
 
-#import "TBSliderButton.h"
+#import "TBSliderSwitch.h"
 #import "Commons.h"
 
 
@@ -19,7 +19,7 @@
 
 #pragma mark - Private -
 
-@interface TBSliderButton(){
+@interface TBSliderSwitch(){
 }
 
 
@@ -48,7 +48,7 @@
 
 #pragma mark - Implementation -
 
-@implementation TBSliderButton
+@implementation TBSliderSwitch
 
 
 
@@ -85,8 +85,8 @@
 {
     self.on = !self.on;
 
-    CGSize imageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
-    self.buttonWidth = imageSize.width;
+    CGSize backgroundImageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
+    self.buttonWidth = backgroundImageSize.width;
     self.backgroundImageView.image = self.on ? self.onBackgroundImage : self.offBackgroundImage;
     
     self.handleImageView.image =  self.on ? self.onHandleImage : self.offHandleImage;
@@ -108,13 +108,26 @@
     CGSize fontSize = [label sizeWithFont:font];
     [self.currentStateLabel setText:label];
     //Using a TextField area we can easily modify the control to get user input from this field
-    self.labelStartXPos = (imageSize.width  - fontSize.width) /2;
+    self.labelStartXPos = (backgroundImageSize.width  - fontSize.width) /2;
     CGRect textFieldRect = CGRectMake(self.labelStartXPos,
-                                      (imageSize.height - fontSize.height) /2,
+                                      (backgroundImageSize.height - fontSize.height) /2,
                                       fontSize.width,
                                       fontSize.height);
     
     [self.currentStateLabel setFrame:textFieldRect];
+    
+    // ACTION LABEL
+    // get text for the button label based on the button state
+    NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
+    CGSize actionLabelSize = [actionLabel sizeWithFont:font];
+    
+    self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - 20);
+    CGRect actionLabelRect = CGRectMake(self.actionLabelStartXPos,
+                                        (backgroundImageSize.height - actionLabelSize.height) /2,
+                                        actionLabelSize.width,
+                                        actionLabelSize.height);
+    [self.actionStateLabel setFrame:actionLabelRect];
+    [self.actionStateLabel setText:actionLabel];
     
     [self.actionStateLabel setAlpha:0];
     [self.currentStateLabel setAlpha:1];
@@ -247,7 +260,6 @@
     
     CGRect labelFrame = [self.currentStateLabel frame];
     labelFrame.origin.x = self.labelStartXPos;
-//    labelFrame.size.width = self.labelWidth;
     
     CGRect actionLabelFrame = [self.actionStateLabel frame];
     actionLabelFrame.origin.x = self.actionLabelStartXPos;
@@ -313,8 +325,6 @@
         
         CGRect textFrame = [self.currentStateLabel frame];
         textFrame.origin.x = self.labelStartXPos + deltaX;
-//        if (textFrame.size.width < 0 )
-//            textFrame.size.width = 0;
         [self.currentStateLabel setFrame:textFrame];
         
         CGRect actionLabelFrame = [self.actionStateLabel frame];
