@@ -283,15 +283,13 @@
     CGRect sliderContentsFrame = [self.sliderControlsView frame];
     sliderContentsFrame.origin.x = self.sliderControlsViewStartPos;
     
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:.2];
-    [UIView setAnimationDelay:.05];
-    [UIView setAnimationCurve:UIViewAnimationCurveLinear];
-    [self.actionStateLabel setAlpha:0];
-    [self.currentStateLabel setAlpha:1];
-    [self.sliderControlsView setFrame:sliderContentsFrame];
-    
-    [UIView commitAnimations];
+    [UIView animateWithDuration:0.2 delay:.05 options:UIViewAnimationCurveLinear
+                     animations:^{
+                                    [self.actionStateLabel setAlpha:0];
+                                    [self.currentStateLabel setAlpha:1];
+                                    [self.sliderControlsView setFrame:sliderContentsFrame];
+                                 }
+                     completion:nil];
 }
 
 #pragma mark - UIControl Override -
