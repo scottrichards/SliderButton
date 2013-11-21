@@ -51,7 +51,7 @@
 
 
 
-#pragma mark - Initialization -
+#pragma mark - Implementation -
 
 @implementation TBSliderSwitch
 
@@ -61,6 +61,8 @@
     _on = on;
     [self updateState];
 }
+
+#pragma mark - Initalization -
 
 -(id)initWithFrame:(CGRect)frame{
     
