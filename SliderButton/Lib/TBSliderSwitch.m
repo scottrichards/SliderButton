@@ -26,8 +26,6 @@
 
 
 @property (assign, nonatomic) float panStartX;
-@property (assign, nonatomic) float labelStartXPos;
-@property (assign, nonatomic) float actionLabelStartXPos;
 @property (assign, nonatomic) float labelWidth;
 @property (assign, nonatomic) float buttonWidth;
 @property (assign, nonatomic) float handleWidth;
@@ -143,18 +141,16 @@
     CGSize currentStateLabelSize = [currentStateLabelString sizeWithFont:font];
     [self setLabelWidth:currentStateLabelSize.width];
     CGRect textFieldRect;
+    float labelStartXPos;
     if (self.on) {
-        textFieldRect = CGRectMake(self.labelStartXPos,
-                                      (backgroundImageSize.height - currentStateLabelSize.height) /2,
-                                      currentStateLabelSize.width,
-                                      currentStateLabelSize.height);
+        labelStartXPos = (clipFrame.size.width - self.handleWidth - currentStateLabelSize.width) /2;
     } else {
-        self.labelStartXPos = self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
-        textFieldRect = CGRectMake(fabs(offsetX) + self.labelStartXPos,
-                                   (backgroundImageSize.height - currentStateLabelSize.height) /2,
-                                   currentStateLabelSize.width,
-                                   currentStateLabelSize.height);
+        labelStartXPos = fabs(offsetX) + self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
     }
+    textFieldRect = CGRectMake(labelStartXPos,
+                               (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                               currentStateLabelSize.width,
+                               currentStateLabelSize.height);
     self.currentStateLabel = [[UILabel alloc] initWithFrame:textFieldRect];
     [self.currentStateLabel setFont:font];
     [self.currentStateLabel setText:currentStateLabelString];
@@ -170,15 +166,17 @@
     
     
     CGRect actionLabelRect;
+    float actionLabelStartXPos;
     if (self.on) {
-        self.actionLabelStartXPos = clipFrame.size.width + ((clipFrame.size.width - self.handleWidth - actionLabelSize.width) / 2);
+        actionLabelStartXPos = clipFrame.size.width + ((clipFrame.size.width - self.handleWidth - actionLabelSize.width) / 2);
     } else {
-        self.actionLabelStartXPos = (fabs(offsetX) - actionLabelSize.width) / 2;
-        actionLabelRect = CGRectMake(self.actionLabelStartXPos,
-                                        (backgroundImageSize.height - actionLabelSize.height) /2,
-                                        actionLabelSize.width,
-                                        actionLabelSize.height);
+        actionLabelStartXPos = (fabs(offsetX) - actionLabelSize.width) / 2;
+       
     }
+    actionLabelRect = CGRectMake(actionLabelStartXPos,
+                                 (backgroundImageSize.height - actionLabelSize.height) /2,
+                                 actionLabelSize.width,
+                                 actionLabelSize.height);
     self.actionStateLabel = [[UILabel alloc] initWithFrame:actionLabelRect];
     [self.actionStateLabel setText:actionLabel];
     [self.actionStateLabel setFont:font];
@@ -237,19 +235,17 @@
     
     
     CGRect textFieldRect;
+    float labelStartXPos;
     if (self.on) {
-        self.labelStartXPos = (clipFrame.size.width - self.handleWidth - currentStateLabelSize.width) /2;
-        textFieldRect = CGRectMake(self.labelStartXPos,
-                                      (backgroundImageSize.height - currentStateLabelSize.height) /2,
-                                      currentStateLabelSize.width,
-                                      currentStateLabelSize.height);
+        labelStartXPos = (clipFrame.size.width - self.handleWidth - currentStateLabelSize.width) /2;
     } else {
-        self.labelStartXPos = self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
-        textFieldRect = CGRectMake(fabs(offsetX) + self.labelStartXPos,
-                                   (backgroundImageSize.height - currentStateLabelSize.height) /2,
-                                   currentStateLabelSize.width,
-                                   currentStateLabelSize.height);
+        labelStartXPos = fabs(offsetX) + self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
+
     }
+    textFieldRect = CGRectMake(labelStartXPos,
+                               (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                               currentStateLabelSize.width,
+                               currentStateLabelSize.height);
     
     [self.currentStateLabel setFrame:textFieldRect];
     
@@ -257,13 +253,14 @@
     NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
     CGSize actionLabelSize = [actionLabel sizeWithFont:font];
     CGRect actionLabelRect;
+    float actionLabelStartXPos;
     if (self.on) {
-        self.actionLabelStartXPos = clipFrame.size.width + ((clipFrame.size.width - self.handleWidth - actionLabelSize.width) / 2);
+        actionLabelStartXPos = clipFrame.size.width + ((clipFrame.size.width - self.handleWidth - actionLabelSize.width) / 2);
     } else {
-        self.actionLabelStartXPos = (fabs(offsetX) - actionLabelSize.width) / 2;
+        actionLabelStartXPos = (fabs(offsetX) - actionLabelSize.width) / 2;
         
     }
-    actionLabelRect = CGRectMake(self.actionLabelStartXPos,
+    actionLabelRect = CGRectMake(actionLabelStartXPos,
                                  (backgroundImageSize.height - actionLabelSize.height) /2,
                                  actionLabelSize.width,
                                  actionLabelSize.height);
