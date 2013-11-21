@@ -28,6 +28,7 @@
 @property (assign, nonatomic) float panStartX;
 @property (assign, nonatomic) float labelWidth;
 @property (assign, nonatomic) float buttonWidth;
+@property (assign, nonatomic) float buttonContentWidth;
 @property (assign, nonatomic) float handleWidth;
 @property (assign, nonatomic) float handlePos;
 @property (assign, nonatomic) float handleStartPos;
@@ -100,10 +101,15 @@
     self.backgroundImageView = [[UIImageView alloc] initWithImage: self.on ? self.onBackgroundImage : self.offBackgroundImage ];
     
     // BACKGROUND CLIP RECT - set up this background frame for clipping within the contents of the button
-    CGRect clipFrame = CGRectMake(MARGIN,0,self.buttonWidth - (MARGIN * 2),backgroundImageSize.height);
+    CGRect clipFrame = CGRectMake(MARGIN,MARGIN,self.buttonWidth - (MARGIN * 2),backgroundImageSize.height - (MARGIN *2 ));
+ 
+    self.buttonContentWidth = clipFrame.size.width;
+    NSLog(@"buttonWidth = %f, buttonContentWidth = %f",self.buttonWidth,self.buttonContentWidth);
     self.clipToButtonBackgroundView = [[UIView alloc] initWithFrame:clipFrame];
     [self.clipToButtonBackgroundView setUserInteractionEnabled:NO];
     [self.clipToButtonBackgroundView setBackgroundColor:[UIColor clearColor]];
+/*    [self.clipToButtonBackgroundView setBackgroundColor:[UIColor yellowColor]];
+    [self.clipToButtonBackgroundView setAlpha:.5]; */
     
     
     // HANDLE
@@ -148,7 +154,7 @@
         labelStartXPos = fabs(offsetX) + self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
     }
     textFieldRect = CGRectMake(labelStartXPos,
-                               (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                               (clipFrame.size.height - currentStateLabelSize.height) /2,
                                currentStateLabelSize.width,
                                currentStateLabelSize.height);
     self.currentStateLabel = [[UILabel alloc] initWithFrame:textFieldRect];
@@ -174,7 +180,7 @@
        
     }
     actionLabelRect = CGRectMake(actionLabelStartXPos,
-                                 (backgroundImageSize.height - actionLabelSize.height) /2,
+                                 (clipFrame.size.height - actionLabelSize.height) /2,
                                  actionLabelSize.width,
                                  actionLabelSize.height);
     self.actionStateLabel = [[UILabel alloc] initWithFrame:actionLabelRect];
@@ -201,8 +207,6 @@
 {
     // SWITCH BACKGROUND setup
     CGRect clipFrame = [self.clipToButtonBackgroundView frame];
-    CGSize backgroundImageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
- //   self.buttonWidth = backgroundImageSize.width;
     self.backgroundImageView.image = self.on ? self.onBackgroundImage : self.offBackgroundImage;
     CGRect contentsFrame = [self.sliderControlsView frame];
     float offsetX;
@@ -232,21 +236,17 @@
     CGSize currentStateLabelSize = [currentStateLabelString sizeWithFont:font];
     [self.currentStateLabel setText:currentStateLabelString];
     //Using a TextField area we can easily modify the control to get user input from this field
-    
-    
     CGRect textFieldRect;
     float labelStartXPos;
     if (self.on) {
         labelStartXPos = (clipFrame.size.width - self.handleWidth - currentStateLabelSize.width) /2;
     } else {
         labelStartXPos = fabs(offsetX) + self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
-
     }
     textFieldRect = CGRectMake(labelStartXPos,
-                               (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                               (clipFrame.size.height - currentStateLabelSize.height) /2,
                                currentStateLabelSize.width,
                                currentStateLabelSize.height);
-    
     [self.currentStateLabel setFrame:textFieldRect];
     
     // ACTION LABEL - text to indicate the action which fades in as user swipes
@@ -258,15 +258,14 @@
         actionLabelStartXPos = clipFrame.size.width + ((clipFrame.size.width - self.handleWidth - actionLabelSize.width) / 2);
     } else {
         actionLabelStartXPos = (fabs(offsetX) - actionLabelSize.width) / 2;
-        
     }
     actionLabelRect = CGRectMake(actionLabelStartXPos,
-                                 (backgroundImageSize.height - actionLabelSize.height) /2,
+                                 (clipFrame.size.height - actionLabelSize.height) /2,
                                  actionLabelSize.width,
                                  actionLabelSize.height);
     [self.actionStateLabel setFrame:actionLabelRect];
     [self.actionStateLabel setText:actionLabel];
-    
+
     [self.actionStateLabel setAlpha:0];
     [self.currentStateLabel setAlpha:1];
     
@@ -306,25 +305,70 @@
 
 /** Track continuos touch event (like drag) **/
 -(BOOL)continueTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
-    BOOL continueTracking = YES;
     [super continueTrackingWithTouch:touch withEvent:event];
 
     //Get touch location
-    CGPoint lastPoint = [touch locationInView:self];
-
-    //Use the location to design the Handle
-    continueTracking = [self handleTrackingEvent:lastPoint event:event];
+    CGPoint touchPoint = [touch locationInView:self];
     
-    return continueTracking;
+    //Use the location to design the Handle
+    [self handleTrackingEvent:touchPoint event:event];
+    
+    return YES;
 }
 
 /** Track is finished **/
 -(void)endTrackingWithTouch:(UITouch *)touch withEvent:(UIEvent *)event{
     [super endTrackingWithTouch:touch withEvent:event];
     NSLog(@"End Tacking With Touch");
+    BOOL continueTracking = YES;
+    CGPoint touchPoint = [touch locationInView:self];   //Get touch location
+    
+    //Use the location to design the Handle
+    continueTracking = [self handleTrackingEvent:touchPoint event:event];
+    // check if we dragged outside the button and stop dragging change button state
+    if (continueTracking) {
+        [self returnToStartState];
+    } else {
+        [self cancelTrackingWithEvent:event];
+        self.on = !self.on;
+        self.handlePos = 0;
+    }
     
     self.panStartX = 0;
-    [self returnToStartState];
+}
+
+/** Handle a tracking event by moving the handle and labels **/
+-(BOOL)handleTrackingEvent:(CGPoint)touchPoint event:(UIEvent *)event {
+    
+    BOOL continueHandling = YES;
+    CGRect handleFrame = [self.handleImageView frame];
+    float deltaX =  touchPoint.x - self.panStartX;
+    self.handlePos = [self calculateHandlePos:deltaX];
+    if (self.on) {
+        deltaX = deltaX > 0 ? 0 : deltaX;   // prevent sliding to the right
+        handleFrame.origin.x = self.handleStartPos + deltaX;    // deltaX is negative when sliding left
+        if (handleFrame.origin.x < 0) {  // stop tracking when we slide all the way to the left
+            continueHandling = NO;
+            deltaX = - (self.buttonContentWidth - self.handleWidth);
+        }
+    } else {
+        deltaX = deltaX < 0 ? 0 : deltaX;   // prevent moving handles outside of the button
+        handleFrame.origin.x = deltaX;
+        if (handleFrame.origin.x + self.handleWidth > self.buttonContentWidth) { // stop tracking when we slide all the way to the right
+            continueHandling = NO;
+            deltaX = self.buttonContentWidth - self.handleWidth;
+        }
+    }
+    // check if we dragged outside the button and stop dragging change button state
+    CGRect contentsFrame = [self.sliderControlsView frame];
+    contentsFrame.origin.x = self.sliderControlsViewStartPos + deltaX;
+    [self.currentStateLabel setAlpha:1-self.handlePos];
+    [self.sliderControlsView setFrame:contentsFrame];
+    [self.actionStateLabel setAlpha:self.handlePos];
+
+    //Redraw
+    [self setNeedsDisplay];
+    return continueHandling;
 }
 
 #pragma mark - Drawing Functions - 
@@ -345,44 +389,5 @@
     return fabs(fractionValue);
 }
 
-#pragma mark - Tracking -
-/** Handle a tracking event by moving the handle and labels **/
--(BOOL)handleTrackingEvent:(CGPoint)lastPoint event:(UIEvent *)event {
-    
-    BOOL continueHandling = YES;
-    CGRect handleFrame = [self.handleImageView frame];
-    float deltaX =  lastPoint.x - self.panStartX;
-    self.handlePos = [self calculateHandlePos:deltaX];
-    if (self.on) {
-        deltaX = deltaX > 0 ? 0 : deltaX;   // prevent moving handles outside of the button
-        handleFrame.origin.x = self.handleStartPos + deltaX;    // deltaX is negative when sliding left
-        if (handleFrame.origin.x < 0)   // stop tracking when we slide all the way to the left
-            continueHandling = NO;
-    } else {
-        deltaX = deltaX < 0 ? 0 : deltaX;   // prevent moving handles outside of the button
-        handleFrame.origin.x = deltaX;
-        if (handleFrame.origin.x + self.handleWidth + MARGIN > self.buttonWidth)  // stop tracking when we slide all the way to the right
-            continueHandling = NO;
-    }
-    // check if we dragged outside the button and stop dragging change button state
-    if (!continueHandling) {
-        [self cancelTrackingWithEvent:event];
-        self.on = !self.on;
-        self.handlePos = 0;
-        self.panStartX = 0;
-    } else {
-       // [self.handleImageView setFrame:handleFrame];
-        CGRect contentsFrame = [self.sliderControlsView frame];
-        contentsFrame.origin.x = self.sliderControlsViewStartPos + deltaX;
-        [self.currentStateLabel setAlpha:1-self.handlePos];
-        [self.sliderControlsView setFrame:contentsFrame];
-        [self.actionStateLabel setAlpha:self.handlePos];
-    }
-    //Redraw
-    [self setNeedsDisplay];
-    return continueHandling;
-}
 
 @end
-
-

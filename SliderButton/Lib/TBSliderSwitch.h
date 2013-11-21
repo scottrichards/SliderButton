@@ -10,7 +10,7 @@
 
 /** Parameters **/
 #define TB_SLIDER_WIDTH 300                          //The width of the slider
-#define TB_SLIDER_HEIGHT 80                          //The height of the slider
+#define TB_SLIDER_HEIGHT 88                          //The height of the slider
 
 
 /*#define TB_FONTSIZE 48                                  //The size of the textfield font
