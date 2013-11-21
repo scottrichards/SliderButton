@@ -33,9 +33,12 @@
 @property (assign, nonatomic) float handleWidth;
 @property (assign, nonatomic) float handlePos;
 @property (assign, nonatomic) float handleStartPos;
+@property (assign, nonatomic) float sliderControlsViewStartPos;
+
 @property (strong, nonatomic) UIImageView *backgroundImageView;
 @property (strong, nonatomic) UIImageView *handleImageView;
 @property (strong, nonatomic) UIView *clipToButtonBackgroundView;
+@property (strong, nonatomic) UIView *sliderControlsView;    // this view contains the labels for action and status as well as the handle it is twice as wide as the clipToButtonBackgroundView so that the action label slides in as the status label slides off the clipToButtonBackgroundView
 @property (strong, nonatomic) UILabel *currentStateLabel;
 @property (strong, nonatomic) UILabel *actionStateLabel;
 @property (strong, nonatomic) UIImage *offBackgroundImage;  // Off Button Background
@@ -48,11 +51,16 @@
 
 
 
-#pragma mark - Implementation -
+#pragma mark - Initialization -
 
 @implementation TBSliderSwitch
 
-
+// set the switch state and then update the control
+-(void)setOn:(BOOL)on
+{
+    _on = on;
+    [self updateState];
+}
 
 -(id)initWithFrame:(CGRect)frame{
     
@@ -92,18 +100,35 @@
     self.backgroundImageView = [[UIImageView alloc] initWithImage: self.on ? self.onBackgroundImage : self.offBackgroundImage ];
     
     // BACKGROUND CLIP RECT - set up this background frame for clipping within the contents of the button
-    CGRect backgroundFrame = CGRectMake(MARGIN,0,self.buttonWidth - (MARGIN * 2),backgroundImageSize.height);
-    self.clipToButtonBackgroundView = [[UIView alloc] initWithFrame:backgroundFrame];
+    CGRect clipFrame = CGRectMake(MARGIN,0,self.buttonWidth - (MARGIN * 2),backgroundImageSize.height);
+    self.clipToButtonBackgroundView = [[UIView alloc] initWithFrame:clipFrame];
     [self.clipToButtonBackgroundView setUserInteractionEnabled:NO];
     [self.clipToButtonBackgroundView setBackgroundColor:[UIColor clearColor]];
     
+    
+    // HANDLE
     self.handleImageView = [[UIImageView alloc] initWithImage: self.on ? self.onHandleImage : self.offHandleImage];
     CGRect handleFrame = [self.handleImageView frame];
     self.handleWidth = handleFrame.size.width;
+    
+    // CONTROLS VIEW this superview contains the labels for action and status as well as the handle it is twice as wide as the clipToButtonBackgroundView so that the action label slides in as the status label slides off the clipToButtonBackgroundView
+    float offsetX;
+    if (self.on)
+        offsetX = 0;
+    else
+        offsetX = -(clipFrame.size.width - self.handleWidth);
+    self.sliderControlsViewStartPos = offsetX;
+    float width = clipFrame.size.width*2 - self.handleWidth;
+    CGRect sliderControlsFrame = CGRectMake(offsetX,0,clipFrame.size.width*2 - self.handleWidth,clipFrame.size.height);
+    self.sliderControlsView = [[UIView alloc] initWithFrame:sliderControlsFrame];
+    [self.sliderControlsView setUserInteractionEnabled:NO];
+    [self.sliderControlsView setBackgroundColor:[UIColor clearColor]];
+    
+    // MORE HANDLE
     if (self.on) {    // if the state is on move handle to right, to indicate swipe left to turn off
-        handleFrame.origin.x = self.buttonWidth - (self.handleWidth + MARGIN);
+        handleFrame.origin.x = width - self.handleWidth - MARGIN;
     } else {
-        handleFrame.origin.x = 0;
+        handleFrame.origin.x = fabs(offsetX);
     }
     self.handleStartPos = handleFrame.origin.x;
     [self.handleImageView setFrame:handleFrame];
@@ -115,17 +140,25 @@
     UIFont *font = [UIFont systemFontOfSize:FONT_SIZE];
     CGSize currentStateLabelSize = [currentStateLabelString sizeWithFont:font];
     [self setLabelWidth:currentStateLabelSize.width];
-    self.labelStartXPos = (backgroundImageSize.width  - currentStateLabelSize.width) /2;
-    CGRect textFieldRect = CGRectMake(self.labelStartXPos,
+    CGRect textFieldRect;
+    if (self.on) {
+        textFieldRect = CGRectMake(self.labelStartXPos,
                                       (backgroundImageSize.height - currentStateLabelSize.height) /2,
                                       currentStateLabelSize.width,
                                       currentStateLabelSize.height);
+    } else {
+        self.labelStartXPos = self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
+        textFieldRect = CGRectMake(fabs(offsetX) + self.labelStartXPos,
+                                   (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                                   currentStateLabelSize.width,
+                                   currentStateLabelSize.height);
+    }
     self.currentStateLabel = [[UILabel alloc] initWithFrame:textFieldRect];
     [self.currentStateLabel setFont:font];
     [self.currentStateLabel setText:currentStateLabelString];
     [self.currentStateLabel setTextColor:[UIColor blackColor]];
     [self.currentStateLabel setBackgroundColor:[UIColor clearColor]];
-    [self.currentStateLabel setLineBreakMode:NSLineBreakByClipping ];
+    [self.currentStateLabel setLineBreakMode:NSLineBreakByClipping];
     
     
     // ACTION LABEL
@@ -133,11 +166,17 @@
     NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
     CGSize actionLabelSize = [actionLabel sizeWithFont:font];
     
-    self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - OFFSET_TO_CENTER_ACTION_LABEL);
-    CGRect actionLabelRect = CGRectMake(self.actionLabelStartXPos,
+    
+    CGRect actionLabelRect;
+    if (self.on) {
+        self.actionLabelStartXPos = clipFrame.size.width + ((clipFrame.size.width - self.handleWidth - actionLabelSize.width) / 2);
+    } else {
+        self.actionLabelStartXPos = (fabs(offsetX) - actionLabelSize.width) / 2;
+        actionLabelRect = CGRectMake(self.actionLabelStartXPos,
                                         (backgroundImageSize.height - actionLabelSize.height) /2,
                                         actionLabelSize.width,
                                         actionLabelSize.height);
+    }
     self.actionStateLabel = [[UILabel alloc] initWithFrame:actionLabelRect];
     [self.actionStateLabel setText:actionLabel];
     [self.actionStateLabel setFont:font];
@@ -146,32 +185,43 @@
     // Add subviews
     [self addSubview:self.backgroundImageView];
     [self.backgroundImageView addSubview:self.clipToButtonBackgroundView];
+    [self.clipToButtonBackgroundView addSubview:self.sliderControlsView];
     [self.clipToButtonBackgroundView setClipsToBounds:YES];
-    [self.clipToButtonBackgroundView addSubview:self.handleImageView];
-    [self.clipToButtonBackgroundView addSubview:self.currentStateLabel];
-    [self.clipToButtonBackgroundView addSubview:self.actionStateLabel];
+    [self.sliderControlsView addSubview:self.handleImageView];
+    [self.sliderControlsView addSubview:self.currentStateLabel];
+    [self.sliderControlsView addSubview:self.actionStateLabel];
     self.panStartX = 0;
     [self setNeedsDisplay];
 }
 
-// Inovked when the state of the switch is changed, updates value and sets display accordingly
-- (void)toggleState
-{
-    self.on = !self.on;
+#pragma mark - Update State -
 
+// Inovked when the state of the switch is changed, updates value and sets display accordingly
+- (void)updateState
+{
     // SWITCH BACKGROUND setup
+    CGRect clipFrame = [self.clipToButtonBackgroundView frame];
     CGSize backgroundImageSize = [self.on ? self.onBackgroundImage : self.offBackgroundImage size];
-    self.buttonWidth = backgroundImageSize.width;
+ //   self.buttonWidth = backgroundImageSize.width;
     self.backgroundImageView.image = self.on ? self.onBackgroundImage : self.offBackgroundImage;
+    CGRect contentsFrame = [self.sliderControlsView frame];
+    float offsetX;
+    if (self.on)
+        offsetX = 0;
+    else
+        offsetX = -(clipFrame.size.width - self.handleWidth);
+    self.sliderControlsViewStartPos = offsetX;
+    contentsFrame.origin.x = offsetX;
+    [self.sliderControlsView setFrame:contentsFrame];
     
     // HANDLE
     self.handleImageView.image =  self.on ? self.onHandleImage : self.offHandleImage;
     CGRect handleFrame = [self.handleImageView frame];
     self.handleWidth = handleFrame.size.width;
     if (self.on) {    // if the state is on move handle to right, to indicate swipe left to turn off
-        handleFrame.origin.x = self.buttonWidth - (self.handleWidth + MARGIN);
+        handleFrame.origin.x = clipFrame.size.width - self.handleWidth;
     } else {
-        handleFrame.origin.x = 0;
+        handleFrame.origin.x = fabs(offsetX);   // the active state label is offset to the left so use this offset so handle appears at what would be 0 if there was no negative offset
     }
     self.handleStartPos = handleFrame.origin.x;
     [self.handleImageView setFrame:handleFrame];
@@ -182,26 +232,39 @@
     CGSize currentStateLabelSize = [currentStateLabelString sizeWithFont:font];
     [self.currentStateLabel setText:currentStateLabelString];
     //Using a TextField area we can easily modify the control to get user input from this field
-    self.labelStartXPos = (backgroundImageSize.width  - currentStateLabelSize.width) /2;
-    CGRect textFieldRect = CGRectMake(self.labelStartXPos,
+    
+    
+    CGRect textFieldRect;
+    if (self.on) {
+        self.labelStartXPos = (clipFrame.size.width - self.handleWidth - currentStateLabelSize.width) /2;
+        textFieldRect = CGRectMake(self.labelStartXPos,
                                       (backgroundImageSize.height - currentStateLabelSize.height) /2,
                                       currentStateLabelSize.width,
                                       currentStateLabelSize.height);
+    } else {
+        self.labelStartXPos = self.handleWidth + (clipFrame.size.width  - currentStateLabelSize.width - self.handleWidth) /2;
+        textFieldRect = CGRectMake(fabs(offsetX) + self.labelStartXPos,
+                                   (backgroundImageSize.height - currentStateLabelSize.height) /2,
+                                   currentStateLabelSize.width,
+                                   currentStateLabelSize.height);
+    }
+    
     [self.currentStateLabel setFrame:textFieldRect];
     
     // ACTION LABEL - text to indicate the action which fades in as user swipes
     NSString *actionLabel = self.on ? self.offActionString : self.onActionString;
     CGSize actionLabelSize = [actionLabel sizeWithFont:font];
+    CGRect actionLabelRect;
     if (self.on) {
-        self.actionLabelStartXPos = backgroundImageSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - OFFSET_TO_CENTER_ACTION_LABEL;
-        NSLog(@"actionLabelStartXPos = %f",self.actionLabelStartXPos);
+        self.actionLabelStartXPos = clipFrame.size.width + ((clipFrame.size.width - self.handleWidth - actionLabelSize.width) / 2);
     } else {
-        self.actionLabelStartXPos = -(actionLabelSize.width + (backgroundImageSize.width - actionLabelSize.width) /2 - OFFSET_TO_CENTER_ACTION_LABEL);
+        self.actionLabelStartXPos = (fabs(offsetX) - actionLabelSize.width) / 2;
+        
     }
-    CGRect actionLabelRect = CGRectMake(self.actionLabelStartXPos,
-                                        (backgroundImageSize.height - actionLabelSize.height) /2,
-                                        actionLabelSize.width,
-                                        actionLabelSize.height);
+    actionLabelRect = CGRectMake(self.actionLabelStartXPos,
+                                 (backgroundImageSize.height - actionLabelSize.height) /2,
+                                 actionLabelSize.width,
+                                 actionLabelSize.height);
     [self.actionStateLabel setFrame:actionLabelRect];
     [self.actionStateLabel setText:actionLabel];
     
@@ -213,6 +276,23 @@
     
     //Control value has changed, let's notify that
     [self sendActionsForControlEvents:UIControlEventValueChanged];
+}
+
+// Called when user does not complete drag to toggle the switch value returns handle and labels to their values before dragging commenced
+-(void)returnToStartState
+{
+    CGRect sliderContentsFrame = [self.sliderControlsView frame];
+    sliderContentsFrame.origin.x = self.sliderControlsViewStartPos;
+    
+    [UIView beginAnimations:nil context:nil];
+    [UIView setAnimationDuration:.2];
+    [UIView setAnimationDelay:.05];
+    [UIView setAnimationCurve:UIViewAnimationCurveLinear];
+    [self.actionStateLabel setAlpha:0];
+    [self.currentStateLabel setAlpha:1];
+    [self.sliderControlsView setFrame:sliderContentsFrame];
+    
+    [UIView commitAnimations];
 }
 
 #pragma mark - UIControl Override -
@@ -238,8 +318,6 @@
     //Use the location to design the Handle
     continueTracking = [self handleTrackingEvent:lastPoint event:event];
     
-    
-    
     return continueTracking;
 }
 
@@ -250,30 +328,6 @@
     
     self.panStartX = 0;
     [self returnToStartState];
-}
-
-// Called when user does not complete drag to toggle the switch value returns handle and labels to their values before dragging commenced
--(void)returnToStartState
-{
-    CGRect handleFrame = [self.handleImageView frame];
-    handleFrame.origin.x = self.handleStartPos;
-    
-    CGRect labelFrame = [self.currentStateLabel frame];
-    labelFrame.origin.x = self.labelStartXPos;
-    
-    CGRect actionLabelFrame = [self.actionStateLabel frame];
-    actionLabelFrame.origin.x = self.actionLabelStartXPos;
-    
-    [UIView beginAnimations:nil context:nil];
-    [UIView setAnimationDuration:.2];
-    [UIView setAnimationDelay:.05];
-    [UIView setAnimationCurve:UIViewAnimationCurveLinear];
-    [self.actionStateLabel setAlpha:0];
-    [self.currentStateLabel setAlpha:1];
-    self.handleImageView.frame = handleFrame;
-    self.currentStateLabel.frame = labelFrame;
-    self.actionStateLabel.frame = actionLabelFrame;
-    [UIView commitAnimations];
 }
 
 #pragma mark - Drawing Functions - 
@@ -290,12 +344,11 @@
 // return a number from 0 -> 1 to indicate the position of the handle while it is being dragged to toggle the state of the switch. Note that the value always goes from 0 to 1 whether you are dragging from left to right to enable switch or right to left to disable the switch
 -(float)calculateHandlePos:(float)deltaX
 {
-    
     float fractionValue = (deltaX/(self.buttonWidth - self.handleWidth));
-    NSLog(@"HandlePos: %f",fractionValue);
     return fabs(fractionValue);
 }
 
+#pragma mark - Tracking -
 /** Handle a tracking event by moving the handle and labels **/
 -(BOOL)handleTrackingEvent:(CGPoint)lastPoint event:(UIEvent *)event {
     
@@ -317,23 +370,16 @@
     // check if we dragged outside the button and stop dragging change button state
     if (!continueHandling) {
         [self cancelTrackingWithEvent:event];
-        [self toggleState];
+        self.on = !self.on;
         self.handlePos = 0;
         self.panStartX = 0;
     } else {
-        [self.handleImageView setFrame:handleFrame];
-        
+       // [self.handleImageView setFrame:handleFrame];
+        CGRect contentsFrame = [self.sliderControlsView frame];
+        contentsFrame.origin.x = self.sliderControlsViewStartPos + deltaX;
         [self.currentStateLabel setAlpha:1-self.handlePos];
-        
-        CGRect textFrame = [self.currentStateLabel frame];
-        textFrame.origin.x = self.labelStartXPos + deltaX;
-        [self.currentStateLabel setFrame:textFrame];
-        
-        CGRect actionLabelFrame = [self.actionStateLabel frame];
-        actionLabelFrame.origin.x = self.actionLabelStartXPos + deltaX;
+        [self.sliderControlsView setFrame:contentsFrame];
         [self.actionStateLabel setAlpha:self.handlePos];
-        [self.actionStateLabel setFrame:actionLabelFrame];
-        
     }
     //Redraw
     [self setNeedsDisplay];

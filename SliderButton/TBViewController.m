@@ -19,9 +19,10 @@
 {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor colorWithRed:0.1 green:0.1 blue:0.1 alpha:1];
+    self.view.backgroundColor = [UIColor lightGrayColor];
     
     //Create the Circular Slider
-    TBSliderSwitch *slider = [[TBSliderSwitch alloc]initWithFrame:CGRectMake(10, 60, TB_SLIDER_SIZE, TB_SLIDER_SIZE)];
+    TBSliderSwitch *slider = [[TBSliderSwitch alloc]initWithFrame:CGRectMake(10, 60, TB_SLIDER_WIDTH, TB_SLIDER_HEIGHT)];
     
     //Define Target-Action behaviour
     [slider addTarget:self action:@selector(switchChanged:) forControlEvents:UIControlEventValueChanged];
